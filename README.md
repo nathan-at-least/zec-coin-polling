@@ -108,7 +108,7 @@ The `ballot definition format` introduced here represents ballots as a specific 
 
 ### Vote Cast Memo Format
 
-A user encodes their vote preferences for a poll into a Zcash encrypted memo sent to the `vote reception Z-Address`. The encoding of this vote is a JSON structure with the following format:
+A voter must encode their vote preferences for a poll into a Zcash encrypted memo sent to the `vote reception Z-Address`, and we expect they will use a tool such as the [Vote Cast Memo Maker](#vote-cast-memo-maker) in this repository, or perhaps built-in wallet support. The encoding of this vote is a JSON structure with the following format:
 
 ```json
 {
@@ -123,6 +123,8 @@ A user encodes their vote preferences for a poll into a Zcash encrypted memo sen
 
 **Strictness Rule:** This standard applies a consistent `strictness rule`: whenever an encoded `vote cast memo` does not follow all of the rules of this standard, then the _entire_ vote is ignored and treated identically to as if every response is "abstain". The rationale for this strictness is to limit any potential for confusion by pollsters, voters, or results aggregators from participating in a poll. This strictness would be cumbersome if users are directly editing poll definitions or vote cast memos, and we assume they will use software tools that can follow this strictness without burdening the user.
 
+**Top-Level Memo Format:** The encrypted memo must contain only the `vote cast memo format` JSON text, optionally preceded or followed by whitespace, otherwise the result is rejected by the `strictness rule`. This means some wallet features such as the common practice of allowing a `Reply-To` Z address would invalidate the vote. There is no support in `v1` for accommodating those kind of wallet features.
+
 **Field definitions:**
 
 - `zec-coin-polling-vote`: Defines the version of this standard, which currently must be `"v1"`.
@@ -134,7 +136,7 @@ A user encodes their vote preferences for a poll into a Zcash encrypted memo sen
   - `<string>` - If the associated entry in `poll-questions` has an `other-prompt` field that is not null, then this vote entry constitutes a free-form response to the question. If the `other-prompt` is `null`, then this vote cast memo is rejected due to the `strictness rule`.
   - Any other value causes the vote cast memo to be rejected due to the `strictness rule`.
 
-**Encoding Issues:** The encoded `vote cast memo` must fit into a single Zcash encrypted memo. This means large polls or votes with long free-form answers may be too long to successfully use this system.
+**Encoding Issues:** The encoded `vote cast memo` must fit into a single Zcash encrypted memo. This means large polls or votes with long free-form answers may be too long to successfully use this system. Tools and wallets that generate this memo should minimize the JSON size by removing all syntactical whitespace.
 
 ## Tools
 
