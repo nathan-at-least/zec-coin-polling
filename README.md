@@ -12,8 +12,8 @@ Typically, the Viewing Key of the `vote reception address`, or more concisely th
 
 A `pollster` is anyone who wants to conduct a `T-Addr Balance Weighted Zcash Poll`. The process to do this is as follows:
 
-1. The `pollster` should ensure they understand the [Issues and Concerns]() section below before deciding to conduct this kind of poll.
-2. Define a `ballot definition` with specific questions and answers (see the [Ballot Definition]() section below).
+1. The `pollster` should ensure they understand the [Issues and Concerns](#issues-and-concerns) section below before deciding to conduct this kind of poll.
+2. Define a `ballot definition` with specific questions and answers (see the [Ballot Definition](#ballot-definition) section below).
 3. Define a `cut-off height` which concludes the voting period.
 4. Set up a `vote reception address` specific to this poll. (It is recommended to use a new single-use address for this purpose.)
 5. Announce the poll with the `ballot definition`, the `cut-off height`, and the `vote reception address` to ZEC users. Typically this announcement should also include the `vote reception viewing key` so that everyone can directly verify the results.
@@ -23,13 +23,13 @@ This repository contains tools to help with this process.
 
 ### Voter Process
 
-A `voter` is any participant that wants to weigh in on any `T-Addr Balance Weighted Zcash Poll`. If you want to participate as a voter in a poll, your process is presented here. Note that this process follows the guidelines presented in the user advice sections under [Issues and Concerns]() below.
+A `voter` is any participant that wants to weigh in on any `T-Addr Balance Weighted Zcash Poll`. If you want to participate as a voter in a poll, your process is presented here. Note that this process follows the guidelines presented in the user advice sections under [Issues and Concerns](#issues-and-concerns) below.
 
-1. First you should ensure you understand the [Issues and Concerns]() section below before deciding to participate in the poll.
+1. First you should ensure you understand the [Issues and Concerns](#issues-and-concerns) section below before deciding to participate in the poll.
 2. Read the `ballot definition` and decide on your preferences.
 3. Create a new unique Transparent `voting address` using your shielded favorite wallet.
 4. Transfer 0.0001 ZEC from your own Shielded Address to your new `voting address`.
-5. Encode your vote preferences into a `vote cast memo`. This is a specific format (described below in [Vote Cast Memo Format]()) and is specific to the `ballot definition`. You can use the `memo-maker` tool in this repository to simplify this step, see [Vote Cast Memo Maker]() section below.
+5. Encode your vote preferences into a `vote cast memo`. This is a specific format (described below in [Vote Cast Memo Format](#vote-cast-memo-format)) and is specific to the `ballot definition`. You can use the `memo-maker` tool in this repository to simplify this step, see [Vote Cast Memo Maker](#vote-cast-memo-maker) section below.
 6. Send 0 ZEC from your `voting address` to the `vote reception address` with their encoded `vote cast memo`. (You will still need to pay the network transaction fee for this step.)
 7. Decide how much ZEC to contribute as your `voting ZEC` towards the poll.
 8. Send your `voting ZEC` amount to *your own* Transparent `voting address`. **IMPORTANT:** Do *NOT* send your `voting ZEC` to the shielded `vote reception address` as this will transfer your ZEC to the pollster rather than post it for the poll. If you are sending from a shielded address, there is no way for the pollster to know where it came from, which makes safe refunds impossible.
