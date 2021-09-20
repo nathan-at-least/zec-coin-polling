@@ -133,7 +133,7 @@ function append_children(elem, children) {
       return mk_elem.apply(null, entry);
 
     } else {
-      set_error('Invalid Child Entry: ' + entry);
+      assert(false, 'Invalid Child Entry: ' + entry);
     }
   }
 
@@ -142,7 +142,6 @@ function append_children(elem, children) {
 
 function set_error(msg) {
   const errmsg = 'ERROR: ' + msg
-  console.log(errmsg);
   const diverror = document.getElementById('div-error');
   diverror.textContent = errmsg;
   diverror.hidden = false;
@@ -162,9 +161,18 @@ function for_each_kv(obj, cb) {
 function validate_ballot_json(doc) {
   console.log('Validating Ballot JSON', doc);
 
-  function predicate(p, desc) {
-    p.predicate_description = desc;
-    return p;
+  function PredicateFailure(value, reason) {
+    this.value = value;
+    this.reason = reason;
+    this.path = [];
+  }
+
+  function predicate(p, reason) {
+    return (v) => {
+      if (!p(v)) {
+        throw new PredicateFailure(v, reason)
+      }
+    };
   }
 
   function and(a, b, more___) {
@@ -174,10 +182,10 @@ function validate_ballot_json(doc) {
         and.apply(null, Array.prototype.slice.call(arguments, 1)),
       );
     } else {
-      return predicate(
-        (v) => a(v) && b(v),
-        a.predicate_description + ' and ' + b.predicate_description,
-      );
+      return (v) => {
+        a(v);
+        b(v);
+      };
     }
   }
 
@@ -188,10 +196,25 @@ function validate_ballot_json(doc) {
         or.apply(null, Array.prototype.slice.call(arguments, 1)),
       );
     } else {
-      return predicate(
-        (v) => a(v) || b(v),
-        a.predicate_description + ' or ' + b.predicate_description,
-      );
+      return (v) => {
+        try {
+          a(v);
+        } catch (ea) {
+          if (!(ea instanceof PredicateFailure)) {
+            throw ea;
+          }
+
+          try {
+            b(v);
+          } catch (eb) {
+            if (!(eb instanceof PredicateFailure)) {
+              throw eb;
+            }
+
+            throw new PredicateFailure(v, ea.reason + ' AND ' + eb.reason);
+          }
+        }
+      }
     }
   }
 
@@ -223,37 +246,31 @@ function validate_ballot_json(doc) {
     ]
   };
 
-  function validate_schema(thing, schema, path) {
+  function validate_schema(thing, schema) {
     if (typeof schema == 'function') {
-      validate_schema_predicate(thing, schema, path);
+      schema(thing);
 
     } else if (Array.isArray(schema)) {
-      validate_schema_array(thing, schema, path);
+      validate_schema_array(thing, schema);
 
     } else if (typeof schema == 'object') {
-      validate_schema_object(thing, schema, path);
+      validate_schema_object(thing, schema);
 
     } else {
       assert(false, 'unknown schema type: ' + schema);
     }
   }
 
-  function validate_schema_predicate(thing, pred, path) {
-    if (!pred(thing)) {
-      const desc = pred.predicate_description;
-      assert(desc !== undefined, 'schema.predicate_description undefined');
-      set_error('' + path + ' is ' + desc + ': ' + thing);
-    }
-  }
-
-  function validate_schema_array(thing, schema, path) {
+  function validate_schema_array(thing, schema) {
     assert(schema.length == 1);
     const elemschema = schema[0];
     validate_schema(thing, predicate(Array.isArray, 'not an array'));
-    thing.forEach((x, i) => validate_schema(x, elemschema, path + '[' + i + ']'));
+    thing.forEach((x, i) => {
+      annotate_path('[' + i + ']', validate_schema, x, elemschema);
+    });
   }
 
-  function validate_schema_object(thing, schema, path) {
+  function validate_schema_object(thing, schema) {
     const unprocessed = {};
     Object.getOwnPropertyNames(thing).forEach((k) => {
       unprocessed[k] = null;
@@ -261,10 +278,11 @@ function validate_ballot_json(doc) {
 
     const parsed = {};
     for (const field in schema) {
-      validate_schema(
+      annotate_path(
+        '.' + field,
+        validate_schema,
         thing[field],
         schema[field],
-        path + '.' + field,
       );
       delete unprocessed[field];
     }
@@ -276,11 +294,30 @@ function validate_ballot_json(doc) {
         (a) => a.length == 0,
         'unknown fields',
       ),
-      path,
     );
   }
 
-  validate_schema(doc, SCHEMA, '<Ballot JSON>');
+  function annotate_path(pathcomponent, f, args__) {
+    const args = Array.prototype.slice.call(arguments, 2);
+    try {
+      f.apply(null, args);
+    } catch (e) {
+      if (e instanceof PredicateFailure) {
+        e.path.unshift(pathcomponent);
+      }
+      throw e;
+    }
+  }
+
+  try {
+    validate_schema(doc, SCHEMA);
+  } catch (e) {
+    if (e instanceof PredicateFailure) {
+      set_error('Invalid Ballot JSON at ' + e.path.join('').substring(1) + ': ' + e.reason + ' for value ' + e.value);
+    } else {
+      throw e;
+    }
+  }
 }
 
 function default_value(v, def) {
@@ -289,6 +326,6 @@ function default_value(v, def) {
 
 function assert(cond, msg) {
   if (!cond) {
-    set_error('Internal assertion failure: ' + msg);
+    throw set_error('Internal assertion failure: ' + msg);
   }
 }
