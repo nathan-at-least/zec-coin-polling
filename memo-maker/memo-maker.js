@@ -1,19 +1,18 @@
 window.onload = () => {
   hide_elems(['div-error', 'div-ballot']);
-  document.getElementById("file-ballot")
-    .addEventListener("change", handle_file);
+
+  fetch('./ballot.json').then((r) => {
+    if (!r.ok) {
+      set_error('Could not retrieve ballot.json.');
+    }
+
+    return r.json();
+  }).then((doc) => {
+    document.getElementById('div-fetching').hidden = true;
+    validate_ballot_json(doc);
+    render_ballot(doc);
+  });
 };
-
-async function handle_file(ev) {
-  const file = ev.target.files[0];
-  ev.target.hidden = true;
-
-  console.log('Handling file: ' + file.name);
-  const text = await file.text();
-  const doc = JSON.parse(text);
-  validate_ballot_json(doc);
-  render_ballot(doc);
-}
 
 function render_ballot(doc) {
   const divballot = document.getElementById('div-ballot');
