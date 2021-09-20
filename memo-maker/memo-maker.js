@@ -21,8 +21,83 @@ function render_ballot(doc) {
     divballot,
     [
       ['div', {}, [
-        'ZEC Coin Polling Ballot ' + doc['zec-coin-polling-ballet'],
+        'ZEC Coin Polling Ballot ' + doc['zec-coin-polling-ballet'] + ': ' + doc['title']
       ]],
+      ['div', {}, [
+        'Cut-off Height ' + doc['cut-off-height'],
+      ]],
+      ['div', {}, [
+        ['div', {}, [
+          'Reception Z-Address: ',
+          ['input',
+            {
+              'type': 'text',
+              'editable': false,
+              'value': doc['vote-reception-address'],
+            },
+            [],
+          ]
+        ]],
+        ['div', {}, [
+          'Reception Viewing Key: ',
+          ['input',
+            {
+              'type': 'text',
+              'editable': false,
+              'value': doc['vote-reception-viewing-key'],
+            },
+            [],
+          ],
+        ]]
+      ]],
+      ['div', {},
+        doc['poll-questions'].map((pq, ix) => {
+          const responses = pq['fixed-responses'].map((r) => {
+            return {
+              'resp': r,
+              'other': false,
+            }
+          });
+          const oprompt = pq['other-prompt'];
+          if (oprompt != null) {
+            responses.push({
+              'resp': oprompt + ': ',
+              'other': true,
+            });
+          }
+
+          return ['ul', {}, [
+            ['li', {}, [
+              'Question ' + (ix+1) + ': ' + pq['question'],
+              ['div', {},
+                responses.map((r, rix) => {
+                  const id = 'response-q' + ix + 'r' + rix;
+                  return ['div', {}, [
+                    ['input',
+                      {
+                        'type': 'radio',
+                        'id': id,
+                        'name': 'response-q' + ix,
+                        'value': '' + rix,
+                      },
+                      [],
+                    ],
+                    ['label',
+                      {'for': id},
+                      (r.other) ? [
+                        r.resp,
+                        ['input', {'type': 'text'}],
+                      ] : [
+                        r.resp,
+                      ],
+                    ],
+                  ]];
+                }),
+              ],
+            ]],
+          ]];
+        }),
+      ]
     ]
   );
   divballot.hidden = false;
@@ -85,6 +160,8 @@ function for_each_kv(obj, cb) {
 }
 
 function validate_ballot_json(doc) {
+  console.log('Validating Ballot JSON', doc);
+
   function predicate(p, desc) {
     p.predicate_description = desc;
     return p;
