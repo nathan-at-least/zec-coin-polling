@@ -79,6 +79,7 @@ function render_ballot(doc) {
                         'id': id,
                         'name': 'response-q' + ix,
                         'value': '' + rix,
+                        'handler': handle_radio,
                       },
                       [],
                     ],
@@ -86,7 +87,11 @@ function render_ballot(doc) {
                       {'for': id},
                       (r.other) ? [
                         r.resp,
-                        ['input', {'type': 'text'}],
+                        ['input', {
+                          'type': 'text',
+                          'id': id + '-other',
+                          'handler': handle_other_input,
+                        }],
                       ] : [
                         r.resp,
                       ],
@@ -105,6 +110,11 @@ function render_ballot(doc) {
 
 function mk_elem(tag, attrs, children) {
   const elem = document.createElement(tag);
+  const handler = attrs['handler'];
+  if (handler !== undefined) {
+    delete attrs['handler'];
+    elem.addEventListener('input', handler);
+  }
   for_each_kv(
     default_value(attrs, {}),
     (k, v) => {
@@ -328,4 +338,14 @@ function assert(cond, msg) {
   if (!cond) {
     throw set_error('Internal assertion failure: ' + msg);
   }
+}
+
+function handle_radio(ev) {
+  console.log(ev);
+}
+
+function handle_other_input(ev) {
+  // Select this radio button:
+  const radioid = ev.target.id.replace(/-other$/, '');
+  document.getElementById(radioid).checked = true;
 }
