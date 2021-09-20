@@ -167,18 +167,32 @@ function validate_ballot_json(doc) {
     return p;
   }
 
-  function and(a, b) {
-    return predicate(
-      (v) => a(v) && b(v),
-      a.predicate_description + ' and ' + b.predicate_description,
-    );
+  function and(a, b, more___) {
+    if (arguments.length > 2) {
+      return and(
+        a,
+        and.apply(null, Array.prototype.slice.call(arguments, 1)),
+      );
+    } else {
+      return predicate(
+        (v) => a(v) && b(v),
+        a.predicate_description + ' and ' + b.predicate_description,
+      );
+    }
   }
 
-  function or(a, b) {
-    return predicate(
-      (v) => a(v) || b(v),
-      a.predicate_description + ' or ' + b.predicate_description,
-    );
+  function or(a, b, more___) {
+    if (arguments.length > 2) {
+      return or(
+        a,
+        or.apply(null, Array.prototype.slice.call(arguments, 1)),
+      );
+    } else {
+      return predicate(
+        (v) => a(v) || b(v),
+        a.predicate_description + ' or ' + b.predicate_description,
+      );
+    }
   }
 
   const is_type = (t) => predicate((v) => typeof v == t, 'not a ' + t);
@@ -192,6 +206,8 @@ function validate_ballot_json(doc) {
     "cut-off-height": and(
       is_type('number'),
       predicate((v) => Number.isInteger(v), 'not an integer'),
+      predicate((v) => v > 1412345, 'in the past'),
+      predicate((v) => v < 4123456, 'too far in the future'),
     ),
     "vote-reception-address": is_type('string'),
     "vote-reception-viewing-key": is_type('string'),
