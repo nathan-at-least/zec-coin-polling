@@ -77,6 +77,7 @@ The `ballot definition format` introduced here represents ballots as a specific 
 ```json
 {
   "zec-coin-polling-ballot": "v1",
+  "title": <poll title>,
   "cut-off-height": <block height>,
   "vote-reception-address": <vote reception z address>,
   "vote-reception-viewing-key": <vote reception viewing key>,

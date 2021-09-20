@@ -1,0 +1,35 @@
+{
+  "zec-coin-polling-ballet": "v1",
+  "title": "An example zec-coin-polling poll",
+  "cut-off-height": 2000000,
+  "vote-reception-address": "FAKE-RECEPTION-ADDRESS",
+  "vote-reception-viewing-key": "FAKE-RECEPTION-VIEWING-KEY",
+  "poll-questions": [
+    {
+      "question": "What is the best primary color?",
+      "other-prompt": null,
+      "fixed-responses": [
+        "red",
+        "green",
+        "blue"
+      ]
+    },
+    {
+      "question": "What is the best shape?",
+      "other-prompt": "Other, please specify",
+      "fixed-responses": [
+        "circle",
+        "square",
+        "triangle"
+      ]
+    },
+    {
+      "question": "Is this the bestest poll ever?",
+      "other-prompt": null,
+      "fixed-responses": [
+        "yes",
+        "no"
+      ]
+    }
+  ]
+}
